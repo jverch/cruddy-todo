@@ -8,47 +8,93 @@ var items = {};
 // Public API - Fix these CRUD functions ///////////////////////////////////////
 
 exports.create = (text, callback) => {
-  var id = counter.getNextUniqueId();
-  items[id] = text;
-  callback(null, {id: id, text: text});
+  counter.getNextUniqueId((err, id) => {
+    fs.writeFile(`${exports.dataDir}/${id}.txt`, text, err => {
+      if (err) {
+        throw err;
+      } else {
+        callback(null, { id: id, text: text });
+      }
+    });
+  });
 };
 
 exports.readOne = (id, callback) => {
-  var item = items[id];
-  if (!item) {
-    callback(new Error(`No item with id: ${id}`));
-  } else {
-    callback(null, {id: id, text: item});
-  }
+  fs.readdir(exports.dataDir, (err, files) => {
+    if (err) {
+      throw err;
+    } else {
+      if (!_.contains(files, `${id}.txt`)) {
+        callback('Error', null);
+      } else {
+        fs.readFile(`${exports.dataDir}/${id}.txt`, 'utf8', (err, data) => {
+          if (err) {
+            throw err;
+          } else {
+            callback(null, { id: id, text: data });
+          }
+        });
+      }
+    }
+  });
 };
 
-exports.readAll = (callback) => {
+exports.readAll = callback => {
   var data = [];
-  _.each(items, (item, idx) => {
-    data.push({ id: idx, text: items[idx] });
+  fs.readdir(exports.dataDir, (err, files) => {
+    if (err) {
+      throw err;
+    } else {
+      _.each(files, file => {
+        data.push({ id: file.slice(0, 5), text: file.slice(0, 5) });
+        // fs.readFile(`${exports.dataDir}/${file}`, (err, data) => {
+        //   if (err) {
+        //     throw err;
+        //   } else {
+        //     console.log(data);
+        //     console.log(JSON.parse(data));
+        //   }
+        // });
+      });
+      callback(null, data);
+    }
   });
-  callback(null, data);
 };
 
 exports.update = (id, text, callback) => {
-  var item = items[id];
-  if (!item) {
-    callback(new Error(`No item with id: ${id}`));
-  } else {
-    items[id] = text;
-    callback(null, {id: id, text: text});
-  }
+  fs.readdir(exports.dataDir, (err, files) => {
+    if (err) {
+      throw err;
+    } else {
+      if (!_.contains(files, `${id}.txt`)) {
+        callback('Error', null);
+      } else {
+        fs.writeFile(`${exports.dataDir}/${id}.txt`, text, err => {
+          if (err) {
+            throw err;
+          } else {
+            callback(null, { id: id, text: text });
+          }
+        });
+      }
+    }
+  });
 };
 
 exports.delete = (id, callback) => {
-  var item = items[id];
-  delete items[id];
-  if(!item) {
-    // report an error if item not found
-    callback(new Error(`No item with id: ${id}`))
-  } else {
-    callback();
-  }
+  fs.readdir(exports.dataDir, (err, files) => {
+    if (err) {
+      throw err;
+    } else {
+      if (!_.contains(files, `${id}.txt`)) {
+        callback('Error', null);
+      } else {
+        fs.unlink(`${exports.dataDir}/${id}.txt`, err => {
+          callback(err);
+        });
+      }
+    }
+  });
 };
 
 // Config+Initialization code -- DO NOT MODIFY /////////////////////////////////
