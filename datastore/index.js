@@ -2,6 +2,8 @@ const fs = require('fs');
 const path = require('path');
 const _ = require('underscore');
 const counter = require('./counter');
+var Promise = require('bluebird');
+Promise.promisifyAll(fs);
 
 var items = {};
 
@@ -9,90 +11,59 @@ var items = {};
 
 exports.create = (text, callback) => {
   counter.getNextUniqueId((err, id) => {
-    fs.writeFile(`${exports.dataDir}/${id}.txt`, text, err => {
-      if (err) {
-        throw err;
-      } else {
-        callback(null, { id: id, text: text });
-      }
+    fs.writeFileAsync(`${exports.dataDir}/${id}.txt`, text).then(() => {
+      callback(null, { id: id, text: text });
     });
   });
 };
 
 exports.readOne = (id, callback) => {
-  fs.readdir(exports.dataDir, (err, files) => {
-    if (err) {
-      throw err;
+  fs.readdirAsync(exports.dataDir).then(files => {
+    if (!_.contains(files, `${id}.txt`)) {
+      callback('Error', null);
     } else {
-      if (!_.contains(files, `${id}.txt`)) {
-        callback('Error', null);
-      } else {
-        fs.readFile(`${exports.dataDir}/${id}.txt`, 'utf8', (err, data) => {
-          if (err) {
-            throw err;
-          } else {
-            callback(null, { id: id, text: data });
-          }
-        });
-      }
+      fs.readFileAsync(`${exports.dataDir}/${id}.txt`, 'utf8').then(data => {
+        callback(null, { id: id, text: data });
+      });
     }
   });
 };
 
 exports.readAll = callback => {
-  var data = [];
-  fs.readdir(exports.dataDir, (err, files) => {
-    if (err) {
-      throw err;
-    } else {
-      _.each(files, file => {
-        data.push({ id: file.slice(0, 5), text: file.slice(0, 5) });
-        // fs.readFile(`${exports.dataDir}/${file}`, (err, data) => {
-        //   if (err) {
-        //     throw err;
-        //   } else {
-        //     console.log(data);
-        //     console.log(JSON.parse(data));
-        //   }
-        // });
-      });
-      callback(null, data);
-    }
+  fs.readdirAsync(exports.dataDir).then(files => {
+    var promises = _.map(files, file => {
+      return fs
+        .readFileAsync(`${exports.dataDir}/${file}`, 'utf8')
+        .then(function(data) {
+          return { id: file.slice(0, 5), text: data };
+        });
+    });
+    Promise.all(promises).then(function(array) {
+      callback(null, array);
+    });
   });
 };
 
 exports.update = (id, text, callback) => {
-  fs.readdir(exports.dataDir, (err, files) => {
-    if (err) {
-      throw err;
+  fs.readdirAsync(exports.dataDir).then(files => {
+    if (!_.contains(files, `${id}.txt`)) {
+      callback('Error', null);
     } else {
-      if (!_.contains(files, `${id}.txt`)) {
-        callback('Error', null);
-      } else {
-        fs.writeFile(`${exports.dataDir}/${id}.txt`, text, err => {
-          if (err) {
-            throw err;
-          } else {
-            callback(null, { id: id, text: text });
-          }
-        });
-      }
+      fs.writeFileAsync(`${exports.dataDir}/${id}.txt`, text).then(() => {
+        callback(null, { id: id, text: text });
+      });
     }
   });
 };
 
 exports.delete = (id, callback) => {
-  fs.readdir(exports.dataDir, (err, files) => {
-    if (err) {
-      throw err;
+  fs.readdirAsync(exports.dataDir).then(files => {
+    if (!_.contains(files, `${id}.txt`)) {
+      callback('Error', null);
     } else {
-      if (!_.contains(files, `${id}.txt`)) {
-        callback('Error', null);
-      } else {
-        fs.unlink(`${exports.dataDir}/${id}.txt`, err => {
-          callback(err);
-        });
-      }
+      fs.unlinkAsync(`${exports.dataDir}/${id}.txt`).then(() => {
+        return callback();
+      });
     }
   });
 };
