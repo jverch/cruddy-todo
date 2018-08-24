@@ -21,9 +21,14 @@
     "express": "^4.16.3",
     "morgan": "^1.9.0",
     "sprintf-js": "^1.1.1",
-    "underscore": "^1.9.1"
+    "underscore": "^1.9.1",
+    "react": "^0.14.7",
+    "react-dom": "^0.14.7"
   },
   "devDependencies": {
+    "babel-cli": "^6.6.5",
+    "babel-preset-env": "^1.6.1",
+    "babel-preset-react": "^6.5.0",
     "chai": "^4.1.2",
     "eslint-config-hackreactor": "git://github.com/reactorcore/eslint-config-hackreactor",
     "mocha": "^5.2.0"

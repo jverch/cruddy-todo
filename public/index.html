@@ -1,9 +1,13 @@
 <!DOCTYPE html>
 <html>
+
 <head>
   <link rel="stylesheet" type="text/css" href="styles.css" />
   <title>CRUDdy Todo</title>
+  <script src="../node_modules/react/dist/react.js"></script>
+  <script src="../node_modules/react-dom/dist/react-dom.js"></script>
 </head>
+
 <body>
   <h3>CRUDdy Todo</h3>
   <div id="form">
@@ -11,11 +15,14 @@
     <button>add</button>
   </div>
   <hr/>
-  <ul id="todos"></ul>
-  
+  <!-- <ul id="todos"></ul> -->
+  <div id="app"></div>
+
   <script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
   <script src="https://fastcdn.org/Underscore.js/1.8.3/underscore-min.js"></script>
-  <script src="todo.js"></script>
-  <script src="client.js"></script>
+  <script src="../compiled/public/todo.js"></script>
+  <script src="../compiled/public/client.js"></script>
+  <script src="../compiled/public/index.js"></script>
 </body>
+
 </html>
